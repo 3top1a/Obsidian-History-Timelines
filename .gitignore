@@ -1,6 +1,5 @@
 .*.swp
 node_modules
-main.js
 package-lock.json
 example-vault/.obsidian/app.json
 example-vault/.obsidian/appearance.json
