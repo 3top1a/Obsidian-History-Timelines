@@ -1,0 +1,27 @@
+{
+    "name": "History Timelines",
+    "version": "0.0.1",
+    "description": "Create a timeline view of all notes with the specified combination of tags",
+    "main": "main.js",
+    "scripts": {
+        "dev": "rollup --config rollup.config.js -w",
+        "build": "rollup --config rollup.config.js"
+    },
+    "keywords": [],
+    "author": "3top1a <3top1a.official@gmail.com>",
+    "license": "MIT",
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^15.1.0",
+        "@rollup/plugin-node-resolve": "^9.0.0",
+        "@rollup/plugin-typescript": "^6.0.0",
+        "@types/node": "^14.14.2",
+        "obsidian": "https://github.com/obsidianmd/obsidian-api/tarball/master",
+        "rollup": "^2.32.1",
+        "tslib": "^2.0.3",
+        "typescript": "^4.0.3"
+    },
+    "dependencies": {
+        "rollup-plugin-styles": "^3.14.1",
+        "vis-timeline": "^7.4.6"
+    }
+}
