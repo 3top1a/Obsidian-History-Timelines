@@ -4,6 +4,7 @@ import { FilterMDFiles, createDate, getImgUrl, parseTag } from './utils';
 import type { TimelinesSettings, AllNotesData } from './types';
 import { DataSet } from "vis-data";
 import { Timeline } from "vis-timeline/esnext";
+import "vis-timeline/styles/vis-timeline-graph2d.css";
 
 export class TimelineMacro extends Modal {
   plugin: TimelinesPlugin;
@@ -119,7 +120,7 @@ export class TimelineMacro extends Modal {
       timelineDates = timelineDates.sort((d1, d2) => d2 - d1);
     }
 
-    if (true) {
+    if (false) {
       let eventCount = 0;
       // Build the timeline html element
       for (let date of timelineDates) {
@@ -174,102 +175,105 @@ export class TimelineMacro extends Modal {
       el.appendChild(timeline);
       return;
     }
+    else {
+      // Create a DataSet
+      let items = new DataSet([]);
 
-    // Create a DataSet
-    let items = new DataSet([]);
+      timelineDates.forEach(date => {
 
-    timelineDates.forEach(date => {
+        // add all events at this date
+        Object.values(timelineNotes[date]).forEach(event => {
+          // Create Event Card
+          let noteCard = document.createElement('div');
+          noteCard.className = 'timeline-card';
+          // add an image only if available
+          if (event.img) {
+            noteCard.createDiv({ cls: 'thumb', attr: { style: `background-image: url(${event.img});` } });
+          }
+          if (event.class) {
+            noteCard.addClass(event.class);
+          }
 
-      // add all events at this date
-      Object.values(timelineNotes[date]).forEach(event => {
-        // Create Event Card
-        let noteCard = document.createElement('div');
-        noteCard.className = 'timeline-card';
-        // add an image only if available
-        if (event.img) {
-          noteCard.createDiv({ cls: 'thumb', attr: { style: `background-image: url(${event.img});` } });
-        }
-        if (event.class) {
-          noteCard.addClass(event.class);
-        }
+          noteCard.createEl('article').createEl('h3').createEl('a', {
+            cls: 'internal-link',
+            attr: { href: `${event.path}` },
+            text: event.title
+          });
+          noteCard.createEl('p', { text: event.innerHTML });
 
-        noteCard.createEl('article').createEl('h3').createEl('a', {
-          cls: 'internal-link',
-          attr: { href: `${event.path}` },
-          text: event.title
-        });
-        noteCard.createEl('p', { text: event.innerHTML });
+          let startDate = event.date?.replace(/(.*)-\d*$/g, '$1');
+          let start, end;
+          if (startDate[0] == '-') {
+            // handle negative year
+            let startComp = startDate.substring(1, startDate.length).split('-');
+            start = new Date(+`-${startComp[0]}`, +startComp[1], +startComp[2]);
+          } else {
+            start = new Date(startDate);
+          }
 
-        let startDate = event.date?.replace(/(.*)-\d*$/g, '$1');
-        let start, end;
-        if (startDate[0] == '-') {
-          // handle negative year
-          let startComp = startDate.substring(1, startDate.length).split('-');
-          start = new Date(+`-${startComp[0]}`, +startComp[1], +startComp[2]);
-        } else {
-          start = new Date(startDate);
-        }
+          let endDate = event.endDate?.replace(/(.*)-\d*$/g, '$1');
+          if (endDate && endDate[0] == '-') {
+            // handle negative year
+            let endComp = endDate.substring(1, endDate.length).split('-');
+            end = new Date(+`-${endComp[0]}`, +endComp[1], +endComp[2]);
+          } else {
+            end = new Date(endDate);
+          }
 
-        let endDate = event.endDate?.replace(/(.*)-\d*$/g, '$1');
-        if (endDate && endDate[0] == '-') {
-          // handle negative year
-          let endComp = endDate.substring(1, endDate.length).split('-');
-          end = new Date(+`-${endComp[0]}`, +endComp[1], +endComp[2]);
-        } else {
-          end = new Date(endDate);
-        }
+          if (start.toString() === 'Invalid Date') {
+            return;
+          }
 
-        if (start.toString() === 'Invalid Date') {
-          return;
-        }
+          if ((event.type === "range" || event.type === "background") && end.toString() === 'Invalid Date') {
+            return;
+          }
 
-        if ((event.type === "range" || event.type === "background") && end.toString() === 'Invalid Date') {
-          return;
-        }
-
-        // Add Event data
-        items.add({
-          id: items.length + 1,
-          content: event.title ?? '',
-          title: noteCard.outerHTML,
-          start: start,
-          className: event.class ?? '',
-          type: event.type,
-          end: end ?? null
+          // Add Event data
+          items.add({
+            id: items.length + 1,
+            content: event.title ?? '',
+            title: noteCard.outerHTML,
+            start: start,
+            className: event.class ?? '',
+            type: event.type,
+            end: end ?? null
+          });
         });
       });
-    });
 
-    // Configuration for the Timeline
-    let options = {
-      minHeight: +args.divHeight,
-      showCurrentTime: false,
-      showTooltips: false,
-      template: function (item: any) {
+      console.log("Item count: " + items.length);
 
-        let eventContainer = document.createElement('div');
-        eventContainer.setText(item.content);
-        let eventCard = eventContainer.createDiv();
-        eventCard.outerHTML = item.title;
-        eventContainer.addEventListener('click', event => {
-          let el = (eventContainer.getElementsByClassName('timeline-card')[0] as HTMLElement);
-          el.style.setProperty('display', 'block');
-          el.style.setProperty('top', `-${el.clientHeight + 10}px`);
-        });
-        return eventContainer;
-      },
-      start: createDate(args.startDate),
-      end: createDate(args.endDate),
-      min: createDate(args.minDate),
-      max: createDate(args.maxDate)
-    };
+      // Configuration for the Timeline
+      let options = {
+        minHeight: +args.divHeight,
+        showCurrentTime: false,
+        showTooltips: false,
+        template: function (item: any) {
 
-    // Create a Timeline
-    timeline.setAttribute('class', 'timeline-vis');
-    new Timeline(timeline, items, options);
+          let eventContainer = document.createElement('div');
+          eventContainer.setText(item.content);
+          let eventCard = eventContainer.createDiv();
+          eventCard.outerHTML = item.title;
+          eventContainer.addEventListener('click', event => {
+            let el = (eventContainer.getElementsByClassName('timeline-card')[0] as HTMLElement);
+            el.style.setProperty('display', 'block');
+            el.style.setProperty('top', `-${el.clientHeight + 10}px`);
+          });
+          return eventContainer;
+        },
+        start: createDate(args.startDate),
+        end: createDate(args.endDate),
+        min: createDate(args.minDate),
+        max: createDate(args.maxDate)
+      };
 
-    // Replace the selected tags with the timeline html
-    el.appendChild(timeline);
+      // Create a Timeline
+      timeline.setAttribute('class', 'timeline-vis');
+      new Timeline(timeline, items, options);
+
+      // Replace the selected tags with the timeline html
+      el.appendChild(timeline);
+    }
   }
 
   onClose() {

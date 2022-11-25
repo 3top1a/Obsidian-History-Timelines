@@ -1,7 +1,6 @@
 import type { TimelinesSettings } from './types';
 import { DEFAULT_SETTINGS, TIMELINE_ICON } from './constants';
 import { TimelinesSettingTab } from './settings';
-import { TimelineProcessor } from './block';
 import { Plugin, MarkdownView, addIcon } from 'obsidian';
 import { TimelineMacro } from './modal';
 
