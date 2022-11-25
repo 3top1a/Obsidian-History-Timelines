@@ -1,10 +1,10 @@
 import { Modal, App } from 'obsidian';
 import TimelinesPlugin from './main';
-import { FilterMDFiles, createDate, getImgUrl, parseTag } from './utils';
+import { createDate, getImgUrl } from './utils';
 import type { TimelinesSettings, AllNotesData } from './types';
 import { DataSet } from "vis-data";
 import { Timeline } from "vis-timeline/esnext";
-import "vis-timeline/styles/vis-timeline-graph2d.css";
+import "./graph.css";
 
 export class TimelineMacro extends Modal {
   plugin: TimelinesPlugin;
@@ -15,19 +15,15 @@ export class TimelineMacro extends Modal {
   }
 
   async onOpen() {
-
-    //await proc.run(source, el, this.settings, this.app.vault.getMarkdownFiles(), this.app.metadataCache, this.app.vault, false);
-
     const el = this.contentEl;
-    el.setText("Timeline");
+		el.createEl('h2', { text: 'History Timelines' });
 
-    let args = {
-      tags: ['timeline'],
-      divHeight: 400,
-      startDate: '-1000',
-      endDate: '3000',
-      minDate: '-3000',
-      maxDate: '3000'
+    let args = { // TODO automaticaly min and max values, it lags like crazy now
+      divHeight: 600,
+      startDate: '1000',
+      endDate: '2050',
+      minDate: '-5000',
+      maxDate: '5000'
     };
 
     let vaultFiles = this.app.vault.getMarkdownFiles();
@@ -39,6 +35,7 @@ export class TimelineMacro extends Modal {
 
     if (!fileList) {
       // if no files valid for timeline
+      console.warn("No files to put onto a timeline!");
       return;
     }
 
@@ -48,6 +45,8 @@ export class TimelineMacro extends Modal {
     let timelineNotes = [] as AllNotesData;
     let timelineDates = [];
 
+    // Parse notes for dates
+    console.trace("Parsing notes for dates");
     for (let file of fileList) {
       // Create a DOM Parser
       const domparser = new DOMParser();
@@ -112,6 +111,7 @@ export class TimelineMacro extends Modal {
     }
 
     // Sort events based on setting
+    console.trace("Sorting events in direction " + settings.sortDirection);
     if (settings.sortDirection) {
       // default is ascending
       timelineDates = timelineDates.sort((d1, d2) => d1 - d2);
@@ -120,6 +120,8 @@ export class TimelineMacro extends Modal {
       timelineDates = timelineDates.sort((d1, d2) => d2 - d1);
     }
 
+    // Display timeline based on mode
+    console.trace("Displaying timeline in mode ");
     if (false) {
       let eventCount = 0;
       // Build the timeline html element
@@ -241,11 +243,9 @@ export class TimelineMacro extends Modal {
         });
       });
 
-      console.log("Item count: " + items.length);
-
       // Configuration for the Timeline
       let options = {
-        minHeight: +args.divHeight,
+        //minHeight: +args.divHeight,
         showCurrentTime: false,
         showTooltips: false,
         template: function (item: any) {

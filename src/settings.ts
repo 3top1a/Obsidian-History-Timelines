@@ -13,17 +13,7 @@ export class TimelinesSettingTab extends PluginSettingTab {
 		let { containerEl } = this;
 
 		containerEl.empty();
-		containerEl.createEl('h2', { text: 'Obsidian Timelines Settings' });
-
-		new Setting(containerEl)
-			.setName('Default timeline tag')
-			.setDesc("Tag to specify which notes to include in created timelines e.g. timeline for #timeline tag")
-			.addText(text => text
-				.setPlaceholder(this.plugin.settings.timelineTag)
-				.onChange(async (value) => {
-					this.plugin.settings.timelineTag = value;
-					await this.plugin.saveSettings();
-				}));
+		containerEl.createEl('h2', { text: 'History Timelines Settings' });
 
 
 		new Setting(containerEl)

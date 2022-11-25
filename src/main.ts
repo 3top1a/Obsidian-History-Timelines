@@ -1,7 +1,7 @@
 import type { TimelinesSettings } from './types';
 import { DEFAULT_SETTINGS, TIMELINE_ICON } from './constants';
 import { TimelinesSettingTab } from './settings';
-import { Plugin, MarkdownView, addIcon } from 'obsidian';
+import { Plugin, addIcon } from 'obsidian';
 import { TimelineMacro } from './modal';
 
 export default class TimelinesPlugin extends Plugin {
@@ -10,7 +10,7 @@ export default class TimelinesPlugin extends Plugin {
 	async onload() {
 		// Load message
 		await this.loadSettings();
-		console.log('Loaded Timelines Plugin');
+		console.log('Loaded History Timelines Plugin');
 
 		// Register timeline icon and side button
 		addIcon("timeline-timeline", TIMELINE_ICON);
@@ -22,7 +22,7 @@ export default class TimelinesPlugin extends Plugin {
 	}
 
 	onunload() {
-		console.log('unloading plugin');
+		console.log('Unloading History Timelines plugin');
 	}
 
 	async loadSettings() {
