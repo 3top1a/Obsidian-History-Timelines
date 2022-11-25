@@ -21,7 +21,7 @@
         "typescript": "^4.0.3"
     },
     "dependencies": {
-        "rollup-plugin-styles": "^3.14.1",
+        "rollup-plugin-styles": "^4.0.0",
         "vis-timeline": "^7.4.6"
     }
 }
