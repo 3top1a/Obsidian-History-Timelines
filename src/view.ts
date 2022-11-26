@@ -48,6 +48,7 @@ export class TimelineView extends ItemView {
 		if (!fileList) {
 			// if no files valid for timeline
 			console.warn("No files to put onto a timeline!");
+			container.createEl("h5", { text: "No files found!" });
 			return;
 		}
 
@@ -124,6 +125,14 @@ export class TimelineView extends ItemView {
 					console.debug("Repeat date: %o", timelineNotes[noteId]);
 				}
 			}
+		}
+
+		// If no events found, replace with error
+		if (timelineDates.length == 0)
+		{
+			console.warn("No events to put onto a timeline!");
+			container.createEl("h5", { text: "No events found!" });
+			return;
 		}
 
 		// Sort events based on setting

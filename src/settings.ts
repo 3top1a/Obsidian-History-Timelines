@@ -15,8 +15,5 @@ export class TimelinesSettingTab extends PluginSettingTab {
 		containerEl.empty();
 		containerEl.createEl('h2', { text: 'History Timelines Settings' });
 		containerEl.createEl('p', { text: 'No settings for now' });
-
-
-		// No settings for now
 	}
 }
