@@ -14,17 +14,9 @@ export class TimelinesSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 		containerEl.createEl('h2', { text: 'History Timelines Settings' });
+		containerEl.createEl('p', { text: 'No settings for now' });
 
 
-		new Setting(containerEl)
-			.setName('Chronological Direction')
-			.setDesc('Default: OLD -> NEW. Turn this setting off: NEW -> OLD')
-			.addToggle((toggle) => {
-				toggle.setValue(this.plugin.settings.sortDirection);
-				toggle.onChange(async (value) => {
-					this.plugin.settings.sortDirection = value;
-					await this.plugin.saveSettings();
-				});
-			})
+		// No settings for now
 	}
 }

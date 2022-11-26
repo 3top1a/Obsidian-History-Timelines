@@ -87,7 +87,7 @@ export class TimelineView extends ItemView {
 				let type = event.dataset.type ?? "box";
 				let endDate = event.dataset.end ?? null;
 
-				// Min/max end and start date for timeline view
+				// Adaptively stretch min and max date for timeline view
 				args.minDate = Math.min(args.minDate, Number(event.dataset.date) )
 				args.maxDate = Math.min(args.maxDate, Number(endDate))
 
@@ -135,6 +135,11 @@ export class TimelineView extends ItemView {
 			// else it is descending
 			timelineDates = timelineDates.sort((d1, d2) => d2 - d1);
 		}
+
+		// Set start and end date
+		// This zooms the timeline all the way out
+		args.startDate = args.minDate;
+		args.endDate = args.maxDate;
 
 		// Display timeline based on mode
 		console.trace("Displaying timeline in mode ");
