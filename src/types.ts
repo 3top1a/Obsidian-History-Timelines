@@ -1,5 +1,4 @@
 export interface TimelinesSettings {
-	sortDirection: boolean;
 }
 
 export interface TimelineArgs {

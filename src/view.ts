@@ -121,15 +121,8 @@ export class TimelineView extends ItemView {
 
 					console.log(note);
 
-					// if note_id already present prepend or append to it
-					if (settings.sortDirection) {
-						timelineNotes[noteId].unshift(note);
-					} else {
-						timelineNotes[noteId].push(note);
-					}
-					console.debug("Repeat date: %o", timelineNotes[noteId]);
+					timelineNotes[noteId].push(note);
 				}
-
 			}
 
 			subcontainer.remove();
@@ -142,157 +135,87 @@ export class TimelineView extends ItemView {
 			return;
 		}
 
-		// Sort events based on setting
-		console.trace("Sorting events in direction " + settings.sortDirection);
-		if (settings.sortDirection) {
-			// default is ascending
-			timelineDates = timelineDates.sort((d1, d2) => d1 - d2);
-		} else {
-			// else it is descending
-			timelineDates = timelineDates.sort((d1, d2) => d2 - d1);
-		}
+		// Create a DataSet
+		let items = new DataSet([]);
 
-		// Display timeline based on mode
-		if (false) {
-			let eventCount = 0;
-			// Build the timeline html element
-			for (let date of timelineDates) {
-				let noteContainer = timeline.createDiv({ cls: 'timeline-container' });
-				let noteHeader = noteContainer.createEl('h2', { text: timelineNotes[date][0].date.replace(/-0*$/g, '').replace(/-0*$/g, '').replace(/-0*$/g, '') });
-				let eventContainer = noteContainer.createDiv({ cls: 'timeline-event-list', attr: { 'style': 'display: block' } });
+		timelineDates.forEach(date => {
 
-				noteHeader.addEventListener('click', event => {
-					if (eventContainer.style.getPropertyValue('display') === 'none') {
-						eventContainer.style.setProperty('display', 'block');
-						return;
-					}
-					eventContainer.style.setProperty('display', 'none');
+			// add all events at this date
+			Object.values(timelineNotes[date]).forEach(event => {
+				// Create Event Card
+				let noteCard = document.createElement('div');
+				noteCard.className = 'timeline-card';
+
+				// add an image only if available
+				if (event.img) {
+					noteCard.createDiv({ cls: 'thumb', attr: { style: `background-image: url(${event.img});` } });
+				}
+				if (event.class) {
+					noteCard.addClass(event.class);
+				}
+
+				noteCard.createEl('article').createEl('h3').createEl('a', {
+					cls: 'internal-link',
+					attr: { href: `${event.path}` },
+					text: event.title
 				});
+				noteCard.createEl('p', { text: event.innerHTML });
 
-				if (eventCount % 2 == 0) {
-					// if its even add it to the left
-					noteContainer.addClass('timeline-left');
-
-				} else {
-					// else add it to the right
-					noteContainer.addClass('timeline-right');
-					noteHeader.setAttribute('style', 'text-align: right;');
+				if (event.date === 'Invalid Date') {
+					return;
 				}
 
-				if (!timelineNotes[date]) {
-					continue;
+				if ((event.type === "range" || event.type === "background") && event.endDate === 'Invalid Date') {
+					return;
 				}
 
-				for (let eventAtDate of timelineNotes[date]) {
-					let noteCard = eventContainer.createDiv({ cls: 'timeline-card' });
-					// add an image only if available
-					if (eventAtDate.img) {
-						noteCard.createDiv({ cls: 'thumb', attr: { style: `background-image: url(${eventAtDate.img});` } });
-					}
-					if (eventAtDate.class) {
-						noteCard.addClass(eventAtDate.class);
-					}
-
-					noteCard.createEl('article').createEl('h3').createEl('a',
-						{
-							cls: 'internal-link',
-							attr: { href: `${eventAtDate.path}` },
-							text: eventAtDate.title
-						});
-					noteCard.createEl('p', { text: eventAtDate.innerHTML });
-				}
-				eventCount++;
-			}
-
-			// Replace the selected tags with the timeline html
-			el.appendChild(timeline);
-			return;
-		}
-		else {
-			// Create a DataSet
-			let items = new DataSet([]);
-
-			timelineDates.forEach(date => {
-
-				// add all events at this date
-				Object.values(timelineNotes[date]).forEach(event => {
-					// Create Event Card
-					let noteCard = document.createElement('div');
-					noteCard.className = 'timeline-card';
-
-					// add an image only if available
-					if (event.img) {
-						noteCard.createDiv({ cls: 'thumb', attr: { style: `background-image: url(${event.img});` } });
-					}
-					if (event.class) {
-						noteCard.addClass(event.class);
-					}
-
-					noteCard.createEl('article').createEl('h3').createEl('a', {
-						cls: 'internal-link',
-						attr: { href: `${event.path}` },
-						text: event.title
-					});
-					noteCard.createEl('p', { text: event.innerHTML });
-
-					if (event.date === 'Invalid Date') {
-						return;
-					}
-
-					if ((event.type === "range" || event.type === "background") && event.endDate === 'Invalid Date') {
-						return;
-					}
-
-					// Add Event data
-					let item = {
-						id: items.length + 1,
-						content: event.title ?? '',
-						title: noteCard.outerHTML,
-						className: event.class ?? '',
-						type: event.type,
-						start: createDate(event.date),
-						end: createDate(event.endDate) ?? null
-					};
-					items.add(item);
-				});
+				// Add Event data
+				let item = {
+					id: items.length + 1,
+					content: event.title ?? '',
+					title: noteCard.outerHTML,
+					className: event.class ?? '',
+					type: event.type,
+					start: createDate(event.date),
+					end: createDate(event.endDate) ?? null
+				};
+				items.add(item);
 			});
+		});
 
-			// Configuration for the Timeline
-			let options = {
-				minHeight: '99%',
-				showCurrentTime: false,
-				showTooltips: false,
-				template: function (item: any) {
+		// Configuration for the Timeline
+		let options = {
+			minHeight: '99%',
+			showCurrentTime: false,
+			showTooltips: false,
+			template: function (item: any) {
+				let eventContainer = document.createElement('div');
+				eventContainer.setText(item.content);
+				let eventCard = eventContainer.createDiv();
+				eventCard.outerHTML = item.title;
 
-					let eventContainer = document.createElement('div');
-					eventContainer.setText(item.content);
-					let eventCard = eventContainer.createDiv();
-					eventCard.outerHTML = item.title;
+				eventContainer.addEventListener('click', event => {
+					let el = (eventContainer.getElementsByClassName('timeline-card')[0] as HTMLElement);
+					el.style.setProperty('display', 'block');
+					el.style.setProperty('top', `-${el.clientHeight + 10}px`);
+				});
 
-					eventContainer.addEventListener('click', event => {
-						let el = (eventContainer.getElementsByClassName('timeline-card')[0] as HTMLElement);
-						el.style.setProperty('display', 'block');
-						el.style.setProperty('top', `-${el.clientHeight + 10}px`);
-					});
+				// Double click to open (ctrl for new tab)
+				// TODO
+				eventContainer.addEventListener('doubleClick', event => {
+					let el = (eventContainer.getElementsByClassName('timeline-card')[0] as HTMLElement);
+				});
 
-					// Double click to open (ctrl for new tab)
-					// TODO
-					eventContainer.addEventListener('doubleClick', event => {
-						let el = (eventContainer.getElementsByClassName('timeline-card')[0] as HTMLElement);
+				return eventContainer;
+			},
+		};
 
-					});
+		// Create a Timeline
+		timeline.setAttribute('class', 'timeline-vis');
+		new Timeline(timeline, items, options);
 
-					return eventContainer;
-				},
-			};
-
-			// Create a Timeline
-			timeline.setAttribute('class', 'timeline-vis');
-			new Timeline(timeline, items, options);
-
-			// Replace the selected tags with the timeline html
-			el.appendChild(timeline);
-		}
+		// Replace the selected tags with the timeline html
+		el.appendChild(timeline);
 	}
 
 	async onClose() {
