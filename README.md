@@ -4,7 +4,7 @@ This is a fork of [Darakah's Timelines](https://github.com/Darakah/obsidian-time
 
 ## Syntax
 ```yaml
-```timeline
+\```timeline
 // This notation is in YAML
 date: 2022-11-26
 
@@ -14,7 +14,7 @@ color: yellow // accepts HTML color codes (some are modified for better viewing)
 image: image.png // Adds an image into the timeline, can be automaticaly fetched when using the Banner plugin
 title: Example title // Custom title, the note name is used when not provided
 
-```
+\```
 ```
 
 TODO:
