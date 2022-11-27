@@ -20,8 +20,10 @@ title: Example title // Custom title, the note name is used when not provided
 TODO:
 - Mode + Reverse Toggle
 - Better css
-- Better representation format - codeblock that can be parsed but also looks nice in the editor
 - Read banner image from [banner plugin] if none provided
+- Debloat, optimize, less for loops
+- Make color option do something
+- Timeline block intelisense
 
 ## Licence
 
