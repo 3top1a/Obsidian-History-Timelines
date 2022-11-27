@@ -9,7 +9,7 @@ This is a fork of [Darakah's Timelines](https://github.com/Darakah/obsidian-time
 date: 2022-11-26
 
 // Optional
-end: 2023 // Makes this event a range
+end: -002022 // If you are going to be using negative years, make the year have six digits, otherwise it will be registered as positive
 color: yellow // accepts HTML color codes (some are modified for better viewing) and hex colors
 image: image.png // Adds an image into the timeline, can be automaticaly fetched when using the Banner plugin
 title: Example title // Custom title, the note name is used when not provided

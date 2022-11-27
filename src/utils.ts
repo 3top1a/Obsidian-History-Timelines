@@ -1,5 +1,5 @@
 import type { DataAdapter } from 'obsidian';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs'
 
 /**
  * Create date of passed string

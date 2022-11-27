@@ -44,6 +44,7 @@ export default class TimelinesPlugin extends Plugin {
 			}
 
 			let end_date = event.end ?? null;
+			let title = event.title ?? null;
 			let color = event.color ?? "white";
 			let img = event.img ?? null;
 
@@ -60,6 +61,7 @@ export default class TimelinesPlugin extends Plugin {
 				attr: {
 					"start_date": start_date,
 					"end_date": end_date,
+					"title": title,
 					"color": color,
 					"img": img,
 				}

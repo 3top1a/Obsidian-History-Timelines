@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf, MarkdownRenderer, Component } from "obsidian";
+import { ItemView, WorkspaceLeaf, MarkdownRenderer, Component, MarkdownPostProcessorContext } from "obsidian";
 import TimelinesPlugin from "./main";
 import { Modal, App } from 'obsidian';
 import { createDate, getImgUrl } from './utils';
@@ -10,11 +10,11 @@ import "./graph.css";
 export const VIEW_TYPE_TIMELINE = "timeline-history-view";
 
 export class TimelineView extends ItemView {
-  	plugin: TimelinesPlugin;
-  
+	plugin: TimelinesPlugin;
+
 	constructor(leaf: WorkspaceLeaf, plugin: TimelinesPlugin) {
 		super(leaf);
-    	this.plugin = plugin;
+		this.plugin = plugin;
 	}
 
 	getViewType() {
@@ -30,13 +30,6 @@ export class TimelineView extends ItemView {
 		container.empty();
 		container.createEl("h3", { text: "History Timelines" });
 		const el = this.contentEl;
-
-		let args = {
-			startDate: 1000,
-			endDate: 2050,
-			minDate: -5000,
-			maxDate: 5000
-		};
 
 		let vaultFiles = this.app.vault.getMarkdownFiles();
 		let appVault = this.app.vault;
@@ -61,91 +54,73 @@ export class TimelineView extends ItemView {
 		// Parse notes for dates
 		console.trace("Parsing notes for dates");
 		for (let file of fileList) {
-			// Create a DOM Parser
-			const domparser = new DOMParser();
-			const doc = domparser.parseFromString(await appVault.read(file), 'text/html');
-			let timelineData = doc.getElementsByClassName('ob-his-timeline-block-data');
-
 			// Render note to HTML and parse it
-			let subcontainer = container.createSpan();
-			// TODO
-    		await MarkdownRenderer.renderMarkdown(await appVault.read(file), subcontainer, file.path, (Component | MarkdownPostProcessorContext) );
+			let subcontainer = el.createSpan();
+			await MarkdownRenderer.renderMarkdown(await appVault.read(file), subcontainer, file.path, null);
+			let timelineData = subcontainer.getElementsByClassName('ob-his-timeline-block-data');
 
-			console.log(timelineData);
+			// Loop through all spans with class `ob-his-timeline-block-data`
 			for (let eventSpan of timelineData as any) {
 				if (!(eventSpan instanceof HTMLElement)) {
 					continue;
 				}
 
 				let noteId;
-
 				// Get all attributes
-
-				/*
-					"start_date": start_date,
-					"end_date": end_date,
-					"color": color,
-					"img": img,
-				*/
-				let start_date = null;
-				let end_date = null;
-				let color = null;
-				let img = null;
-
-				for (let index = 0; index < eventSpan.attributes.length; index++) {
-					const element = eventSpan.attributes.item(index);
-					console.log(element);
-
-
+				function get_named_item_or_null(name: string): any {
+					let temp = eventSpan.attributes.getNamedItem(name);
+					if (temp === null) {
+						return null;
+					}
+					else {
+						return temp.value ?? null;
+					}
 				}
-
-				return;
+				let start_date = get_named_item_or_null("start_date");
+				let end_date = get_named_item_or_null("end_date") ?? null;
+				let title = get_named_item_or_null("title") ?? file.name.slice(0, file.name.length - 3);
+				let color = get_named_item_or_null("color") ?? null;
+				let img = get_named_item_or_null("img") ?? null;
 
 				// check if a valid date is specified
-				if (eventSpan.date[0] == '-') {
+				if (start_date[0] == '-') {
 					// if it is a negative year
-					noteId = +eventSpan.dataset.date.substring(1, eventSpan.dataset.date.length).split('-').join('') * -1;
+					noteId = +start_date.substring(1, start_date.length).split('-').join('') * -1;
 				} else {
-					noteId = +eventSpan.dataset.date.split('-').join('');
+					noteId = +start_date.split('-').join('');
 				}
 				if (!Number.isInteger(noteId)) {
 					continue;
 				}
-				// if not title is specified use note name
-				let noteTitle = eventSpan.dataset.title ?? file.name;
-				let noteClass = eventSpan.dataset.class ?? "";
-				let notePath = '/' + file.path;
-				let type = eventSpan.dataset.type ?? "box";
-				let endDate = eventSpan.dataset.end ?? null;
-
-				// Adaptively stretch min and max date for timeline view
-				args.minDate = Math.min(args.minDate, Number(eventSpan.dataset.date) )
-				args.maxDate = Math.min(args.maxDate, Number(endDate))
 
 				if (!timelineNotes[noteId]) {
 					timelineNotes[noteId] = [];
 					timelineNotes[noteId][0] = {
-						date: eventSpan.dataset.date,
-						title: noteTitle,
-						img: getImgUrl(appVault.adapter, eventSpan.dataset.img),
+						date: start_date,
+						title: title,
+						img: getImgUrl(appVault.adapter, img),
 						innerHTML: eventSpan.innerHTML,
-						path: notePath,
-						class: noteClass,
-						type: type,
-						endDate: endDate
+						path: '/' + file.path,
+						class: "timeline-card", // noteClass
+						type: "range", // `box` as default
+						endDate: end_date,
 					};
 					timelineDates.push(noteId);
+					console.log(timelineNotes[noteId][0]);
 				} else {
 					let note = {
-						date: eventSpan.dataset.date,
-						title: noteTitle,
-						img: getImgUrl(appVault.adapter, eventSpan.dataset.img),
+						date: start_date,
+						title: title,
+						img: getImgUrl(appVault.adapter, img),
 						innerHTML: eventSpan.innerHTML,
-						path: notePath,
-						class: noteClass,
-						type: type,
-						endDate: endDate
+						path: '/' + file.path,
+						class: "timeline-card",
+						type: "range",
+						endDate: end_date
 					};
+
+					console.log(note);
+
 					// if note_id already present prepend or append to it
 					if (settings.sortDirection) {
 						timelineNotes[noteId].unshift(note);
@@ -154,13 +129,14 @@ export class TimelineView extends ItemView {
 					}
 					console.debug("Repeat date: %o", timelineNotes[noteId]);
 				}
+
 			}
+
+			subcontainer.remove();
 		}
-		return;
 
 		// If no events found, replace with error
-		if (timelineDates.length == 0)
-		{
+		if (timelineDates.length == 0) {
 			console.warn("No events to put onto a timeline!");
 			container.createEl("h5", { text: "No events found!" });
 			return;
@@ -176,13 +152,7 @@ export class TimelineView extends ItemView {
 			timelineDates = timelineDates.sort((d1, d2) => d2 - d1);
 		}
 
-		// Set start and end date
-		// This zooms the timeline all the way out
-		args.startDate = args.minDate;
-		args.endDate = args.maxDate;
-
 		// Display timeline based on mode
-		console.trace("Displaying timeline in mode ");
 		if (false) {
 			let eventCount = 0;
 			// Build the timeline html element
@@ -265,43 +235,25 @@ export class TimelineView extends ItemView {
 					});
 					noteCard.createEl('p', { text: event.innerHTML });
 
-					let startDate = event.date?.replace(/(.*)-\d*$/g, '$1');
-					let start, end;
-					if (startDate[0] == '-') {
-						// handle negative year
-						let startComp = startDate.substring(1, startDate.length).split('-');
-						start = new Date(+`-${startComp[0]}`, +startComp[1], +startComp[2]);
-					} else {
-						start = new Date(startDate);
-					}
-
-					let endDate = event.endDate?.replace(/(.*)-\d*$/g, '$1');
-					if (endDate && endDate[0] == '-') {
-						// handle negative year
-						let endComp = endDate.substring(1, endDate.length).split('-');
-						end = new Date(+`-${endComp[0]}`, +endComp[1], +endComp[2]);
-					} else {
-						end = new Date(endDate);
-					}
-
-					if (start.toString() === 'Invalid Date') {
+					if (event.date === 'Invalid Date') {
 						return;
 					}
 
-					if ((event.type === "range" || event.type === "background") && end.toString() === 'Invalid Date') {
+					if ((event.type === "range" || event.type === "background") && event.endDate === 'Invalid Date') {
 						return;
 					}
 
 					// Add Event data
-					items.add({
+					let item = {
 						id: items.length + 1,
 						content: event.title ?? '',
 						title: noteCard.outerHTML,
-						start: start,
 						className: event.class ?? '',
 						type: event.type,
-						end: end ?? null
-					});
+						start: createDate(event.date),
+						end: createDate(event.endDate) ?? null
+					};
+					items.add(item);
 				});
 			});
 
@@ -327,15 +279,11 @@ export class TimelineView extends ItemView {
 					// TODO
 					eventContainer.addEventListener('doubleClick', event => {
 						let el = (eventContainer.getElementsByClassName('timeline-card')[0] as HTMLElement);
-						
+
 					});
 
 					return eventContainer;
 				},
-				start: createDate(String(args.startDate)),
-				end: createDate(String(args.endDate)),
-				min: createDate(String(args.minDate)),
-				max: createDate(String(args.maxDate))
 			};
 
 			// Create a Timeline
