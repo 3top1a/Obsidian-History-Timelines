@@ -34,12 +34,13 @@ export default class TimelinesPlugin extends Plugin {
 
 		this.registerMarkdownCodeBlockProcessor("timeline", (source, el, ctx) => {
 			const event = parse(source);
+			const container = el.createDiv({cls: "ob-his-timeline-block"})
 
 			console.debug(event);
 
 			let start_date = event.date;
 			if (!start_date) {
-				el.createEl("p", { text: "Invalid start date!" });
+				container.createEl("p", { text: "Invalid start date!" });
 			}
 
 			let end_date = event.end ?? null;
@@ -48,12 +49,21 @@ export default class TimelinesPlugin extends Plugin {
 
 			// TODO Add color
 			if (end_date) {
-
-				el.createEl("i", { text: start_date + " to " + end_date });
+				container.createEl("i", { text: start_date + " to " + end_date });
 			}
 			else {
-				el.createEl("i", { text: start_date });
+				container.createEl("i", { text: start_date });
 			}
+
+			// Encode data to a span for parsing in `view.ts`
+			container.createSpan({cls: "ob-his-timeline-block-data" ,
+				attr: {
+					"start_date": start_date,
+					"end_date": end_date,
+					"color": color,
+					"img": img,
+				}
+			});
 		});
 
 		this.addSettingTab(new TimelinesSettingTab(this.app, this));

@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { ItemView, WorkspaceLeaf, MarkdownRenderer, Component } from "obsidian";
 import TimelinesPlugin from "./main";
 import { Modal, App } from 'obsidian';
 import { createDate, getImgUrl } from './utils';
@@ -64,41 +64,71 @@ export class TimelineView extends ItemView {
 			// Create a DOM Parser
 			const domparser = new DOMParser();
 			const doc = domparser.parseFromString(await appVault.read(file), 'text/html');
-			let timelineData = doc.getElementsByClassName('ob-timelines');
-			for (let event of timelineData as any) {
-				if (!(event instanceof HTMLElement)) {
+			let timelineData = doc.getElementsByClassName('ob-his-timeline-block-data');
+
+			// Render note to HTML and parse it
+			let subcontainer = container.createSpan();
+			// TODO
+    		await MarkdownRenderer.renderMarkdown(await appVault.read(file), subcontainer, file.path, (Component | MarkdownPostProcessorContext) );
+
+			console.log(timelineData);
+			for (let eventSpan of timelineData as any) {
+				if (!(eventSpan instanceof HTMLElement)) {
 					continue;
 				}
 
 				let noteId;
+
+				// Get all attributes
+
+				/*
+					"start_date": start_date,
+					"end_date": end_date,
+					"color": color,
+					"img": img,
+				*/
+				let start_date = null;
+				let end_date = null;
+				let color = null;
+				let img = null;
+
+				for (let index = 0; index < eventSpan.attributes.length; index++) {
+					const element = eventSpan.attributes.item(index);
+					console.log(element);
+
+
+				}
+
+				return;
+
 				// check if a valid date is specified
-				if (event.dataset.date[0] == '-') {
+				if (eventSpan.date[0] == '-') {
 					// if it is a negative year
-					noteId = +event.dataset.date.substring(1, event.dataset.date.length).split('-').join('') * -1;
+					noteId = +eventSpan.dataset.date.substring(1, eventSpan.dataset.date.length).split('-').join('') * -1;
 				} else {
-					noteId = +event.dataset.date.split('-').join('');
+					noteId = +eventSpan.dataset.date.split('-').join('');
 				}
 				if (!Number.isInteger(noteId)) {
 					continue;
 				}
 				// if not title is specified use note name
-				let noteTitle = event.dataset.title ?? file.name;
-				let noteClass = event.dataset.class ?? "";
+				let noteTitle = eventSpan.dataset.title ?? file.name;
+				let noteClass = eventSpan.dataset.class ?? "";
 				let notePath = '/' + file.path;
-				let type = event.dataset.type ?? "box";
-				let endDate = event.dataset.end ?? null;
+				let type = eventSpan.dataset.type ?? "box";
+				let endDate = eventSpan.dataset.end ?? null;
 
 				// Adaptively stretch min and max date for timeline view
-				args.minDate = Math.min(args.minDate, Number(event.dataset.date) )
+				args.minDate = Math.min(args.minDate, Number(eventSpan.dataset.date) )
 				args.maxDate = Math.min(args.maxDate, Number(endDate))
 
 				if (!timelineNotes[noteId]) {
 					timelineNotes[noteId] = [];
 					timelineNotes[noteId][0] = {
-						date: event.dataset.date,
+						date: eventSpan.dataset.date,
 						title: noteTitle,
-						img: getImgUrl(appVault.adapter, event.dataset.img),
-						innerHTML: event.innerHTML,
+						img: getImgUrl(appVault.adapter, eventSpan.dataset.img),
+						innerHTML: eventSpan.innerHTML,
 						path: notePath,
 						class: noteClass,
 						type: type,
@@ -107,10 +137,10 @@ export class TimelineView extends ItemView {
 					timelineDates.push(noteId);
 				} else {
 					let note = {
-						date: event.dataset.date,
+						date: eventSpan.dataset.date,
 						title: noteTitle,
-						img: getImgUrl(appVault.adapter, event.dataset.img),
-						innerHTML: event.innerHTML,
+						img: getImgUrl(appVault.adapter, eventSpan.dataset.img),
+						innerHTML: eventSpan.innerHTML,
 						path: notePath,
 						class: noteClass,
 						type: type,
@@ -126,6 +156,7 @@ export class TimelineView extends ItemView {
 				}
 			}
 		}
+		return;
 
 		// If no events found, replace with error
 		if (timelineDates.length == 0)
