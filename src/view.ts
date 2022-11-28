@@ -57,11 +57,13 @@ export class TimelineView extends ItemView {
 		for (let file of fileList) {
 			// Render note to HTML and parse it
 			let subcontainer = el.createSpan();
-			await MarkdownRenderer.renderMarkdown(await appVault.read(file), subcontainer, file.path, null);
-			let timelineData = subcontainer.getElementsByClassName('ob-his-timeline-block-data');
+			///``` xojo[a-z]*\n[\s\S]*?\n```
+			let note_regex = '```timeline[a-z]*\n[\s\S]*?\n```'
+			let text = await appVault.read(file);
+			let matches = text.match(note_regex);
 
 			// Loop through all spans with class `ob-his-timeline-block-data`
-			for (let eventSpan of timelineData as any) {
+			for (let eventSpan of matches as any) {
 				if (!(eventSpan instanceof HTMLElement)) {
 					continue;
 				}

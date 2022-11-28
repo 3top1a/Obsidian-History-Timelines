@@ -26,3 +26,5 @@ export function getImgUrl(vaultAdaptor: DataAdapter, path: string): string {
 
 	return vaultAdaptor.getResourcePath(path);
 }
+
+
