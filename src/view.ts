@@ -54,18 +54,17 @@ export class TimelineView extends ItemView {
 
 		for (let file of fileList) {
 			// Render note to HTML and parse it
-			let note_regex = /```timeline[a-z]*\n[\s\S]*?\n```/
+			let note_regex = /```timeline[a-z]*\n[\s\S]*?\n```/g;
 			let text = await appVault.read(file);
 			let matches = text.match(note_regex);
-
-			console.log(matches);
 
 			if (!matches)
 			{
 				continue;
 			}
-
+			
 			// Loop through all spans with class `ob-his-timeline-block-data`
+			console.log(matches);
 			for (let yaml_unparsed of matches) {
 				// Remove first and last line
 				yaml_unparsed = yaml_unparsed.substring(yaml_unparsed.indexOf("\n") + 1);
@@ -132,6 +131,7 @@ export class TimelineView extends ItemView {
 		// Configuration for the Timeline
 		let options = {
 			minHeight: '99%',
+			maxHeight: '100%',
 			template: function (item: any) {
 				let eventContainer = document.createElement('div');
 				eventContainer.setText(item.content);
