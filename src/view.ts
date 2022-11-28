@@ -6,6 +6,7 @@ import type { TimelinesSettings, AllNotesData } from './types';
 import { DataSet } from "vis-data";
 import { Timeline } from "vis-timeline/esnext";
 import "./graph.css";
+import Parallel from 'paralleljs';
 
 export const VIEW_TYPE_TIMELINE = "timeline-history-view";
 
@@ -48,11 +49,11 @@ export class TimelineView extends ItemView {
 		// Keep only the files that have the time info
 		let timeline = document.createElement('div');
 		timeline.setAttribute('class', 'timeline');
-		let timelineNotes = [] as AllNotesData;
-		let timelineDates = [];
 
-		// Parse notes for dates
-		console.trace("Parsing notes for dates");
+		// Create a DataSet
+		console.trace("Parsing notes");
+		let items = new DataSet([]);
+
 		for (let file of fileList) {
 			// Render note to HTML and parse it
 			let subcontainer = el.createSpan();
@@ -65,7 +66,6 @@ export class TimelineView extends ItemView {
 					continue;
 				}
 
-				let noteId;
 				// Get all attributes
 				function get_named_item_or_null(name: string): any {
 					let temp = eventSpan.attributes.getNamedItem(name);
@@ -80,108 +80,58 @@ export class TimelineView extends ItemView {
 				let end_date = get_named_item_or_null("end_date") ?? null;
 				let title = get_named_item_or_null("title") ?? file.name.slice(0, file.name.length - 3);
 				let color = get_named_item_or_null("color") ?? null;
+				let type = get_named_item_or_null("type") ?? (Boolean(end_date) ? "range" : "box" );
 				let img = get_named_item_or_null("img") ?? null;
+				let path = '/' + file.path;
 
-				// check if a valid date is specified
-				if (start_date[0] == '-') {
-					// if it is a negative year
-					noteId = +start_date.substring(1, start_date.length).split('-').join('') * -1;
-				} else {
-					noteId = +start_date.split('-').join('');
-				}
-				if (!Number.isInteger(noteId)) {
-					continue;
-				}
-
-				if (!timelineNotes[noteId]) {
-					timelineNotes[noteId] = [];
-					timelineNotes[noteId][0] = {
-						date: start_date,
-						title: title,
-						img: getImgUrl(appVault.adapter, img),
-						innerHTML: eventSpan.innerHTML,
-						path: '/' + file.path,
-						class: "timeline-card", // noteClass
-						type: "range", // `box` as default
-						endDate: end_date,
-					};
-					timelineDates.push(noteId);
-					console.log(timelineNotes[noteId][0]);
-				} else {
-					let note = {
-						date: start_date,
-						title: title,
-						img: getImgUrl(appVault.adapter, img),
-						innerHTML: eventSpan.innerHTML,
-						path: '/' + file.path,
-						class: "timeline-card",
-						type: "range",
-						endDate: end_date
-					};
-
-					console.log(note);
-
-					timelineNotes[noteId].push(note);
-				}
-			}
-
-			subcontainer.remove();
-		}
-
-		// If no events found, replace with error
-		if (timelineDates.length == 0) {
-			console.warn("No events to put onto a timeline!");
-			container.createEl("h5", { text: "No events found!" });
-			return;
-		}
-
-		// Create a DataSet
-		let items = new DataSet([]);
-
-		timelineDates.forEach(date => {
-
-			// add all events at this date
-			Object.values(timelineNotes[date]).forEach(event => {
 				// Create Event Card
 				let noteCard = document.createElement('div');
 				noteCard.className = 'timeline-card';
 
 				// add an image only if available
-				if (event.img) {
-					noteCard.createDiv({ cls: 'thumb', attr: { style: `background-image: url(${event.img});` } });
-				}
-				if (event.class) {
-					noteCard.addClass(event.class);
+				if (img) {
+					noteCard.createDiv({ cls: 'thumb', attr: { style: `background-image: url(${img});` } });
 				}
 
 				noteCard.createEl('article').createEl('h3').createEl('a', {
 					cls: 'internal-link',
-					attr: { href: `${event.path}` },
-					text: event.title
+					attr: { href: `${path}` },
+					text: title
 				});
-				noteCard.createEl('p', { text: event.innerHTML });
+				noteCard.createEl('p', { text: eventSpan.innerHTML });
 
-				if (event.date === 'Invalid Date') {
+				if (start_date === 'Invalid Date') {
+					console.error("Event", title, "has an invalid date!")
 					return;
 				}
 
-				if ((event.type === "range" || event.type === "background") && event.endDate === 'Invalid Date') {
+				if ((type === "range" || type === "background") && end_date === 'Invalid Date') {
+					console.error("Event", title, ", which is a period/range, has an invalid end date!")
 					return;
 				}
 
 				// Add Event data
 				let item = {
 					id: items.length + 1,
-					content: event.title ?? '',
+					content: title,
 					title: noteCard.outerHTML,
-					className: event.class ?? '',
-					type: event.type,
-					start: createDate(event.date),
-					end: createDate(event.endDate) ?? null
+					className: "timeline-card",
+					type: type,
+					start: createDate(start_date),
+					end: createDate(end_date) ?? null
 				};
 				items.add(item);
-			});
-		});
+			}
+			subcontainer.empty();
+			subcontainer.remove();
+		}
+
+		// If no events found, replace with error
+		if (items.length == 0) {
+			console.warn("No events to put onto a timeline!");
+			container.createEl("h5", { text: "No events found!" });
+			return;
+		}
 
 		// Configuration for the Timeline
 		let options = {
