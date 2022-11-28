@@ -3,7 +3,7 @@ import { DEFAULT_SETTINGS } from './constants';
 import { TimelinesSettingTab } from './settings';
 import { Plugin } from 'obsidian';
 import { TimelineView, VIEW_TYPE_TIMELINE } from "./view";
-import { parse, Parser } from 'yaml'
+import { parse } from 'yaml'
 
 export default class TimelinesPlugin extends Plugin {
 	settings: TimelinesSettings;

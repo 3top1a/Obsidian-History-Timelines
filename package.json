@@ -23,7 +23,6 @@
     },
     "dependencies": {
         "dayjs": "^1.11.6",
-        "paralleljs": "^1.1.0",
         "rollup-plugin-styles": "^4.0.0",
         "vis-timeline": "^7.4.6",
         "yaml": "^2.1.3"

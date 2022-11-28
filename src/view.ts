@@ -1,12 +1,10 @@
 import { ItemView, WorkspaceLeaf, MarkdownRenderer, Component, MarkdownPostProcessorContext } from "obsidian";
 import TimelinesPlugin from "./main";
-import { Modal, App } from 'obsidian';
 import { createDate, getImgUrl } from './utils';
-import type { TimelinesSettings, AllNotesData } from './types';
 import { DataSet } from "vis-data";
 import { Timeline } from "vis-timeline/esnext";
 import "./graph.css";
-import Parallel from 'paralleljs';
+import { parse } from 'yaml'
 
 export const VIEW_TYPE_TIMELINE = "timeline-history-view";
 
@@ -56,34 +54,32 @@ export class TimelineView extends ItemView {
 
 		for (let file of fileList) {
 			// Render note to HTML and parse it
-			let subcontainer = el.createSpan();
-			///``` xojo[a-z]*\n[\s\S]*?\n```
-			let note_regex = '```timeline[a-z]*\n[\s\S]*?\n```'
+			let note_regex = /```timeline[a-z]*\n[\s\S]*?\n```/
 			let text = await appVault.read(file);
 			let matches = text.match(note_regex);
 
+			console.log(matches);
+
+			if (!matches)
+			{
+				continue;
+			}
+
 			// Loop through all spans with class `ob-his-timeline-block-data`
-			for (let eventSpan of matches as any) {
-				if (!(eventSpan instanceof HTMLElement)) {
-					continue;
-				}
+			for (let yaml_unparsed of matches) {
+				// Remove first and last line
+				yaml_unparsed = yaml_unparsed.substring(yaml_unparsed.indexOf("\n") + 1);
+				yaml_unparsed = yaml_unparsed.substring(yaml_unparsed.lastIndexOf("\n") + 1, -1 );
+
+				let event = parse(yaml_unparsed);
 
 				// Get all attributes
-				function get_named_item_or_null(name: string): any {
-					let temp = eventSpan.attributes.getNamedItem(name);
-					if (temp === null) {
-						return null;
-					}
-					else {
-						return temp.value ?? null;
-					}
-				}
-				let start_date = get_named_item_or_null("start_date");
-				let end_date = get_named_item_or_null("end_date") ?? null;
-				let title = get_named_item_or_null("title") ?? file.name.slice(0, file.name.length - 3);
-				let color = get_named_item_or_null("color") ?? null;
-				let type = get_named_item_or_null("type") ?? (Boolean(end_date) ? "range" : "box" );
-				let img = get_named_item_or_null("img") ?? null;
+				let start_date = event.date;
+				let end_date = event.end ?? null;
+				let title = event.title ?? file.name.slice(0, file.name.length - 3);
+				let color = event.color ?? null;
+				let type = event.type ?? (Boolean(end_date) ? "range" : "box" );
+				let img = event.img ?? null;
 				let path = '/' + file.path;
 
 				// Create Event Card
@@ -100,7 +96,7 @@ export class TimelineView extends ItemView {
 					attr: { href: `${path}` },
 					text: title
 				});
-				noteCard.createEl('p', { text: eventSpan.innerHTML });
+				noteCard.createEl('p', { text: event.innerHTML });
 
 				if (start_date === 'Invalid Date') {
 					console.error("Event", title, "has an invalid date!")
@@ -124,8 +120,6 @@ export class TimelineView extends ItemView {
 				};
 				items.add(item);
 			}
-			subcontainer.empty();
-			subcontainer.remove();
 		}
 
 		// If no events found, replace with error
