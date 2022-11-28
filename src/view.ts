@@ -132,8 +132,6 @@ export class TimelineView extends ItemView {
 		// Configuration for the Timeline
 		let options = {
 			minHeight: '99%',
-			showCurrentTime: false,
-			showTooltips: false,
 			template: function (item: any) {
 				let eventContainer = document.createElement('div');
 				eventContainer.setText(item.content);

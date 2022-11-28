@@ -19,7 +19,6 @@ title: Example title // Custom title, the note name is used when not provided
 TODO:
 - Better css
 - Read banner image from [banner plugin] if none provided
-- Debloat, optimize, less for loops
 - Make color option do something
 - Timeline block intelisense
 
