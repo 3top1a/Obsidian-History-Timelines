@@ -133,6 +133,7 @@ export class TimelineView extends ItemView {
 		let options = {
 			minHeight: '99%',
 			maxHeight: '100%',
+			zoomMax:  2147483647000, // Default zoom * 1000
 			template: function (item: any) {
 				let eventContainer = document.createElement('div');
 				eventContainer.setText(item.content);

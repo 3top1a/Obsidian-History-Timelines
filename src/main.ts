@@ -46,13 +46,14 @@ export default class TimelinesPlugin extends Plugin {
 
 			let end_date = event.end ?? null;
 			let title = event.title ?? ctx.sourcePath.slice(0, ctx.sourcePath.length - 3);
-			let color = event.color ?? "white";
+			let color = event.color ?? null;
 			let img = event.img ?? null;
 
 			// TODO Add color
 
 			let paragraph = container.createEl("p");
-			paragraph.createSpan({text: title, attr: {"style": "font-weight: bold;"}});
+			let pr_color = color==null ? "" : "color: " + color + ";";
+			paragraph.createSpan({text: title, attr: {"style": "font-weight: bold; " + pr_color}});
 			paragraph.createSpan({text: " - "});
 			paragraph.createSpan({text: formatDate(createDate(start_date)), attr: {"style": "font-style: italic;"}});
 

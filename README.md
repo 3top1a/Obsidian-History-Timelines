@@ -2,6 +2,8 @@
 Generate a chronological timeline of all notes in chronological (or reversed) order. 
 This is a fork of [Darakah's Timelines](https://github.com/Darakah/obsidian-timelines) plugin
 
+![](example-vault/screenshot.png)
+
 ## Syntax
 ```yaml
 \```timeline
