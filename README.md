@@ -16,6 +16,7 @@ color: yellow # accepts HTML color codes and hex colors
 image: image.png # Adds an image into the timeline, can be automaticaly fetched when using the Banner plugin
 title: Example title # Custom title, the note name is used when not provided
 type: period # Options: box, range, background, point
+group: example # You can group events together
 ```
 ``````
 
@@ -23,7 +24,6 @@ type: period # Options: box, range, background, point
 - Better css
 - Make color option do something
 - Timeline block intelisense
-- 
 
 ## Licence
 

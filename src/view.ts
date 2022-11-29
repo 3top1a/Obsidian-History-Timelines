@@ -5,6 +5,7 @@ import { DataSet } from "vis-data";
 import { Timeline } from "vis-timeline/esnext";
 import "./graph.css";
 import { parse } from 'yaml'
+import { group } from "console";
 
 export const VIEW_TYPE_TIMELINE = "timeline-history-view";
 
@@ -48,27 +49,25 @@ export class TimelineView extends ItemView {
 		let timeline = document.createElement('div');
 		timeline.setAttribute('class', 'timeline');
 
-		// Create a DataSet
+		// Read all files in the current vault and parse them
+		// using a simple regex.
+		// Then parse the inner code of the regex and add that as an item
 		console.trace("Parsing notes");
 		let items = new DataSet([]);
-
 		for (let file of fileList) {
-			// Render note to HTML and parse it
 			let note_regex = /```timeline[a-z]*\n[\s\S]*?\n```/g;
 			let text = await appVault.read(file);
 			let matches = text.match(note_regex);
 
-			if (!matches)
-			{
+			if (!matches) {
 				continue;
 			}
-			
-			// Loop through all spans with class `ob-his-timeline-block-data`
-			console.log(matches);
+
+			// Loop through all regex matches
 			for (let yaml_unparsed of matches) {
 				// Remove first and last line
 				yaml_unparsed = yaml_unparsed.substring(yaml_unparsed.indexOf("\n") + 1);
-				yaml_unparsed = yaml_unparsed.substring(yaml_unparsed.lastIndexOf("\n") + 1, -1 );
+				yaml_unparsed = yaml_unparsed.substring(yaml_unparsed.lastIndexOf("\n") + 1, -1);
 
 				let event = parse(yaml_unparsed);
 
@@ -77,7 +76,8 @@ export class TimelineView extends ItemView {
 				let end_date = event.end ?? null;
 				let title = event.title ?? file.name.slice(0, file.name.length - 3);
 				let color = event.color ?? null;
-				let type = event.type ?? (Boolean(end_date) ? "range" : "box" );
+				let group = event.group ?? null;
+				let type = event.type ?? (Boolean(end_date) ? "range" : "box");
 				let img = event.img ?? null;
 				let path = '/' + file.path;
 
@@ -97,14 +97,14 @@ export class TimelineView extends ItemView {
 				});
 				noteCard.createEl('p', { text: event.innerHTML });
 
-				if (start_date === 'Invalid Date') {
-					console.error("Event", title, "has an invalid date!")
-					return;
+				if (start_date === 'Invalid Date' || start_date == null || start_date == "" ) {
+					console.warn("Event", title, "has an invalid date!")
+					continue;
 				}
 
 				if ((type === "range" || type === "background") && end_date === 'Invalid Date') {
-					console.error("Event", title, ", which is a period/range, has an invalid end date!")
-					return;
+					console.warn("Event", title, ", which is a background/range, has an invalid end date!")
+					continue;
 				}
 
 				// Add Event data
@@ -117,6 +117,7 @@ export class TimelineView extends ItemView {
 					start: createDate(start_date),
 					end: createDate(end_date) ?? null,
 					color: color,
+					group: group,
 				};
 				items.add(item);
 			}
@@ -133,8 +134,7 @@ export class TimelineView extends ItemView {
 		let options = {
 			minHeight: '99%',
 			maxHeight: '100%',
-			zoomMax:  2147483647000, // Default zoom * 1000
-			template: function (item: any) {
+			/*template: function (item: any) {
 				let eventContainer = document.createElement('div');
 				eventContainer.setText(item.content);
 				let eventCard = eventContainer.createDiv();
@@ -153,7 +153,7 @@ export class TimelineView extends ItemView {
 				});
 
 				return eventContainer;
-			},
+			},*/
 		};
 
 		// Create a Timeline

@@ -1,21 +1,19 @@
 ```timeline
 date: -000027-01-01
 end: +000395-01-01
-color: "#800000"
 title: Unified Roman Empire
 type: background
+group: Unified Roman Empire
 ```
 ```timeline
 date: 000395-01-01
 end: +000480-01-01
-color: "#800000"
 title: Western Roman Empire
 type: background
 ```
 ```timeline
 date: 000395-01-01
 end: +001453-01-01
-color: "#800000"
 title: Eastern Roman Empire
 type: background
 ```
@@ -31,18 +29,21 @@ Here is a list of rulers in the Roman Empire.
 date: -000027-1-1
 end: +000014-01-01
 title: Augustus
+group: Unified Roman Empire
 ```
 
 ```timeline
 date: +000098-01-01
 end: 000117-1-1
 title: Trajan
+group: Unified Roman Empire
 ```
 
 ```timeline
 date: +000138-1-1
 end: +000161-1-1
 title: Antoninus Pius
+group: Unified Roman Empire
 ```
 
 ```timeline

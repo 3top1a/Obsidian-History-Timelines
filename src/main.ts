@@ -35,7 +35,7 @@ export default class TimelinesPlugin extends Plugin {
 
 		this.registerMarkdownCodeBlockProcessor("timeline", (source, el, ctx) => {
 			const event = parse(source);
-			const container = el.createDiv({cls: "ob-his-timeline-block"})
+			const container = el.createDiv({ cls: "ob-his-timeline-block" })
 
 			console.debug(event);
 
@@ -47,36 +47,35 @@ export default class TimelinesPlugin extends Plugin {
 			let end_date = event.end ?? null;
 			let title = event.title ?? ctx.sourcePath.slice(0, ctx.sourcePath.length - 3);
 			let color = event.color ?? null;
+			let group = event.group ?? null;
 			let img = event.img ?? null;
 
-			// TODO Add color
-
 			let paragraph = container.createEl("p");
-			let pr_color = color==null ? "" : "color: " + color + ";";
-			paragraph.createSpan({text: title, attr: {"style": "font-weight: bold; " + pr_color}});
-			paragraph.createSpan({text: " - "});
-			paragraph.createSpan({text: formatDate(createDate(start_date)), attr: {"style": "font-style: italic;"}});
+			let pr_color = (color != null) ? "color: " + color + ";" : "";
 
+			paragraph.createSpan({ text: title, attr: { "style": "font-weight: bold; " + pr_color } });
+
+			if (group) {
+				paragraph.createSpan({ text: " (group " + group + ") ", attr: { "style": "font-weight: light; " + pr_color } });
+			}
+
+			paragraph.createSpan({ text: " - " });
+			paragraph.createSpan({ text: formatDate(createDate(start_date)), attr: { "style": "font-style: italic;" } });
+
+			// Check end date and draw it/warn acordingly
 			if (end_date === 'Invalid Date') {
-				paragraph.createSpan({text: " to "});
-				paragraph.createSpan({text: "Invalid date!", attr: {"style": "font-weight: bold; color: #e8000d;"}});
+				paragraph.createSpan({ text: " to " });
+				paragraph.createSpan({ text: "Invalid date!", attr: { "style": "font-weight: bold; color: #e8000d;" } });
 			}
-			else if (end_date)
-			{
-				paragraph.createSpan({text: " to "});
-				paragraph.createSpan({text: formatDate(createDate(end_date)), attr: {"style": "font-style: italic;"}});
+			else if (end_date) {
+				paragraph.createSpan({ text: " to " });
+				paragraph.createSpan({ text: formatDate(createDate(end_date)), attr: { "style": "font-style: italic;" } });
 			}
 
-			// Encode data to a span for parsing in `view.ts`
-			container.createSpan({cls: "ob-his-timeline-block-data" ,
-				attr: {
-					"start_date": start_date,
-					"end_date": end_date,
-					"title": title,
-					"color": color,
-					"img": img,
-				}
-			});
+			// If there is an image, show it
+			if (img) {
+				paragraph.createEl('img', { attr: { "href": img } })
+			}
 		});
 
 		this.addSettingTab(new TimelinesSettingTab(this.app, this));
