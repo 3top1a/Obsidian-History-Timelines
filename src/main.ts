@@ -4,6 +4,7 @@ import { TimelinesSettingTab } from './settings';
 import { Plugin } from 'obsidian';
 import { TimelineView, VIEW_TYPE_TIMELINE } from "./view";
 import { parse } from 'yaml'
+import { createDate, formatDate } from './utils';
 
 export default class TimelinesPlugin extends Plugin {
 	settings: TimelinesSettings;
@@ -44,16 +45,25 @@ export default class TimelinesPlugin extends Plugin {
 			}
 
 			let end_date = event.end ?? null;
-			let title = event.title ?? null;
+			let title = event.title ?? ctx.sourcePath.slice(0, ctx.sourcePath.length - 3);
 			let color = event.color ?? "white";
 			let img = event.img ?? null;
 
 			// TODO Add color
-			if (end_date) {
-				container.createEl("i", { text: start_date + " to " + end_date });
+
+			let paragraph = container.createEl("p");
+			paragraph.createSpan({text: title, attr: {"style": "font-weight: bold;"}});
+			paragraph.createSpan({text: " - "});
+			paragraph.createSpan({text: formatDate(createDate(start_date)), attr: {"style": "font-style: italic;"}});
+
+			if (end_date === 'Invalid Date') {
+				paragraph.createSpan({text: " to "});
+				paragraph.createSpan({text: "Invalid date!", attr: {"style": "font-weight: bold; color: #e8000d;"}});
 			}
-			else {
-				container.createEl("i", { text: start_date });
+			else if (end_date)
+			{
+				paragraph.createSpan({text: " to "});
+				paragraph.createSpan({text: formatDate(createDate(end_date)), attr: {"style": "font-style: italic;"}});
 			}
 
 			// Encode data to a span for parsing in `view.ts`

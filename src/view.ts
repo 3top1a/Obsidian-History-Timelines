@@ -115,7 +115,8 @@ export class TimelineView extends ItemView {
 					className: "timeline-card",
 					type: type,
 					start: createDate(start_date),
-					end: createDate(end_date) ?? null
+					end: createDate(end_date) ?? null,
+					color: color,
 				};
 				items.add(item);
 			}

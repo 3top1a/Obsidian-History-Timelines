@@ -13,14 +13,15 @@ end: -002022 // If you are going to be using negative years, make the year have 
 color: yellow // accepts HTML color codes and hex colors
 image: image.png // Adds an image into the timeline, can be automaticaly fetched when using the Banner plugin
 title: Example title // Custom title, the note name is used when not provided
+type: period // Options: box, range, background, point
 \```
 ```
 
 TODO:
 - Better css
-- Read banner image from [banner plugin] if none provided
 - Make color option do something
 - Timeline block intelisense
+- 
 
 ## Licence
 

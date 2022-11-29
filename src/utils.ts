@@ -8,6 +8,13 @@ import dayjs from 'dayjs'
 export function createDate(date_string: string): Date {
 	return dayjs(date_string).toDate();
 }
+/**
+ * Format a date for displaying
+ * TODO: Format change in settings
+ */
+export function formatDate(date: Date): string {
+	return dayjs(date).format('DD. MMMM YYYY')
+}
 
 /**
  * Return URL for specified image path
@@ -26,5 +33,3 @@ export function getImgUrl(vaultAdaptor: DataAdapter, path: string): string {
 
 	return vaultAdaptor.getResourcePath(path);
 }
-
-
