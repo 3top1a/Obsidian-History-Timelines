@@ -150,7 +150,6 @@ export class TimelineView extends ItemView {
 		// Configuration for the Timeline
 		let options = {
 			minHeight: '99%',
-			maxHeight: '100%',
 			/*template: function (item: any) {
 				let eventContainer = document.createElement('div');
 				eventContainer.setText(item.content);
