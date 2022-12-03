@@ -1,7 +1,7 @@
 {
     "name": "history-timelines",
-    "version": "0.0.1",
-    "description": "Create a timeline view of all notes with the specified combination of tags",
+    "version": "1.0.0",
+    "description": "Generate a chronological timeline of all notes in chronological order. ",
     "main": "main.js",
     "scripts": {
         "dev": "rollup --config rollup.config.js -w",
