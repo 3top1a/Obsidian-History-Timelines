@@ -98,7 +98,6 @@ export class TimelineView extends ItemView {
 						attr: { href: `${path}` },
 						text: title
 					});
-					noteCard.createEl('p', { text: event.innerHTML });
 
 					if (start_date === 'Invalid Date' || start_date == null || start_date == "") {
 						console.warn("Event", title, "has an invalid date!")
