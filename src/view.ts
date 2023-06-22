@@ -57,7 +57,7 @@ export class TimelineView extends ItemView {
 
 		for (let file of fileList) {
 			try {
-				let note_regex = /```timeline[a-z]*\n[\s\S]*?\n```/g;
+				let note_regex = /```tl[a-z]*\n[\s\S]*?\n```/g;
 				let text = await appVault.read(file);
 				let matches = text.match(note_regex);
 

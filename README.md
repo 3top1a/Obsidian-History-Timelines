@@ -6,7 +6,7 @@ This is a fork of [Darakah's Timelines](https://github.com/Darakah/obsidian-time
 
 ## Syntax
 ``````yaml
-```timeline
+```tl
 # This notation is in YAML
 date: 2022-11-26
 
@@ -19,6 +19,25 @@ type: period # Options: box, range, background, point
 group: example # You can group events together
 ```
 ``````
+
+## Development
+
+You will need NodeJS and NPM
+
+Install dependencies
+```bash
+npm i
+```
+
+Compile dev version
+```bash
+npm run dev
+```
+
+Compile build version
+```bash
+npm run build
+```
 
 ## TODO:
 - Better css
